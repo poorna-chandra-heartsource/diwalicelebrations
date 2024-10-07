@@ -7,12 +7,18 @@ import { CustomPopulateOptionsInterface, SortOrder, UpdatedResponseInterface } f
 import { AddressService } from "../address/address.service";
 import { CreateOrderDto } from "./dto/create-order.dto";
 import { OrderItemService } from "../order-items/order-item.service";
-import { HttpException, HttpStatus } from "@nestjs/common";
+import { forwardRef, HttpException, HttpStatus, Inject, Injectable } from "@nestjs/common";
+import { NotificationService } from "src/shared/api-services/notification.service";
+import { UserService } from "../user/user.service";
+import { UserDocument } from "../user/schema/user.schema";
 
+@Injectable({})
 export class OrderService {
     constructor(
         @InjectModel(Order.name) private readonly model: Model<OrderDocument>,
-        private readonly orderItemService: OrderItemService
+        private readonly orderItemService: OrderItemService,
+        private readonly notificationService: NotificationService,
+        @Inject(forwardRef(() => UserService)) private readonly userService: UserService // Use forwardRef here
     ) {}
 
     async fetchAllOrders(pageOptionsRequestDto: PageOptionsRequestDto, orderDetails: IOrder): Promise<PageDto<IOrder[]>> {
@@ -69,11 +75,11 @@ export class OrderService {
 
     async createOrder(order: CreateOrderDto): Promise<any> {
         try {
+            let user: any = await this.userService.fetchUserDetails(order.user_id);
             order.user_id = new Types.ObjectId(order.user_id);
             let orderDocument : OrderDocument = new this.model(order)
-            const savedOrder: OrderDocument = await orderDocument.save();
+            await orderDocument.save();
             let newOrder = orderDocument.toJSON();
-
             if (order.orderItems) {
                 try {
                     order.orderItems.forEach((orderItem: any) => {
@@ -88,7 +94,14 @@ export class OrderService {
                     throw new HttpException("Failed to create order items. order creation rolled back.", HttpStatus.INTERNAL_SERVER_ERROR);
                 }
             }
-            return savedOrder;
+            user['address'] = user.user_address[0];
+            user['order'] = order;
+            delete user.user_address;
+            await this.notificationService.userCreationNOrderConfirmationMail(user, false)
+            return {
+                "success": true,
+                "data":"Order created successfully"
+            };
         } catch(error) {
             console.log(`Error creating order`)
             return Promise.reject(error)

@@ -16,6 +16,12 @@ export class User implements IUser {
     @Prop({ type: String, required: true, unique: true })
     mobile: string;
 
+    @Prop({ type: String })
+    resetToken?: string;
+    
+    @Prop({ type: Date })
+    resetTokenExpires?: Date;
+
     @Prop({ type: Date })
     created_dt: string;
   

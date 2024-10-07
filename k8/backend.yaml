@@ -1,0 +1,47 @@
+# deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nestjs-deployment
+  labels:
+    app: diwali-backend-app
+spec:
+  replicas: 1  # Number of pods to run
+  selector:
+    matchLabels:
+      app: diwali-backend-app
+  template:
+    metadata:
+      labels:
+        app: diwali-backend-app
+    spec:
+      containers:
+      - name: nestjs-container
+        image: your-docker-repo/diwali-backend-app:latest  # Replace with your Docker image
+        ports:
+        - containerPort: 3000
+        envFrom:
+        - configMapRef:
+            name: backend-configmap-dev
+        - secretRef:
+            name: backend-secret-dev
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+          requests:
+            memory: "128Mi"
+            cpu: "250m"
+        readinessProbe:
+          httpGet:
+            path: "/health"
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: "/health"
+            port: 3000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+      restartPolicy: Always

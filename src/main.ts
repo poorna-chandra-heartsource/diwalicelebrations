@@ -25,7 +25,6 @@ async function bootstrap() {
   await corsMiddleware(app);
   await bodyParserMiddleware(app);
 
-  console.log('Mongo URI: ', mongoConfig().uri);
   await app.listen(appConfig().port, () =>
     console.log(`App running on port ${appConfig().port}`),
   );

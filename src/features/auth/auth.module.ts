@@ -6,6 +6,8 @@ import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { UserModule } from '../user/user.module';
 import { jwtConstants } from './jwt.constants';
+import { ProductModule } from '../products/product.module';
+import { SharedModule } from 'src/shared/shared.module';
 
 @Module({
   imports: [
@@ -14,9 +16,11 @@ import { jwtConstants } from './jwt.constants';
       secret: jwtConstants.secret,
       signOptions: { expiresIn: '1h' }, // Token expires in 1 hour
     }),
-    UserModule, // Import User module to access user service
+    UserModule, // Import User module to access user service,
+    ProductModule,
+    SharedModule
   ],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy ],
   controllers: [AuthController],
 })
 export class AuthModule {}

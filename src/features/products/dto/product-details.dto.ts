@@ -1,8 +1,13 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsDateString, IsEnum, IsMongoId, IsNotEmpty, IsNumber, IsNumberString, IsOptional, IsString } from "class-validator";
+import { IsArray, IsDateString, IsEnum, IsMongoId, IsNotEmpty, IsNumber, IsNumberString, IsOptional, IsString } from "class-validator";
 import { UnitTypeEnum } from "../interfaces/product.enum";
 
 export class ProductDetailsDto {
+    @ApiProperty({ description: 'Serial Number of the product' })
+    @IsArray()
+    @IsOptional()
+    id?: string[];
+
     @ApiProperty({ description: 'Serial Number of the product' })
     @IsString()
     @IsOptional()

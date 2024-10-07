@@ -5,5 +5,6 @@ export default registerAs('appConfig', () => ({
   port: parseInt(process.env.APP_PORT, 10) || 3000,
   host: process.env.APP_HOST,
   name: process.env.APP_NAME,
-  version: process.env.APP_VERSION
+  version: process.env.APP_VERSION,
+  frontendUrl: process.env.APP_FRONTEND_URL
 }));

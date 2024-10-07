@@ -31,7 +31,7 @@ export class ProductService {
         productInput: IProduct
     ): Promise<PageDto<ProductDocument[]>> {
         try {
-            const { name, category, rate_in_rs, unit_type, display_price } = productInput;
+            const { id, name, category, rate_in_rs, unit_type, display_price } = productInput;
             const query: any = {
                 deleted_dt: { $eq: null }
             };
@@ -42,6 +42,10 @@ export class ProductService {
                 sort_order = SortOrder.Ascending,
               } = pageOptionsRequestDto;
 
+            if(id){
+                id.forEach(item => item = new Types.ObjectId(item));
+                query['_id'] = {'$in':  id}
+            }
             if (name) query.name = name;
             if (category) query.category = category;
             if(rate_in_rs) query.rate_in_rs = rate_in_rs;

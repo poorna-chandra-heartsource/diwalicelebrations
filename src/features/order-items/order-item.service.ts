@@ -6,7 +6,9 @@ import { Model, Types } from "mongoose";
 import { CustomPopulateOptionsInterface, SortOrder, UpdatedResponseInterface } from "../../shared/interfaces";
 import { AddressService } from "../address/address.service";
 import { CreateOrderItemDto } from "./dto/create-order-item.dto";
+import { Injectable } from "@nestjs/common";
 
+@Injectable({})
 export class OrderItemService {
     constructor(
         @InjectModel(OrderItem.name) private readonly model: Model<OrderItemDocument>

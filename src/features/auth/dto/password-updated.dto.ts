@@ -12,3 +12,19 @@ export class PasswordUpdateDto {
     })
     password: string;
 }
+
+export class ForgotPasswordDto {
+    @IsEmail()
+    @IsNotEmpty()
+    email: string;
+}
+
+export class PasswordResetDto {
+    @IsString()
+    @IsNotEmpty()
+    token: string;
+
+    @IsString()
+    @IsNotEmpty()
+    newPassword: string;
+}

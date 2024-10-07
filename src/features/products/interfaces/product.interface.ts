@@ -1,6 +1,8 @@
+import { Types } from "mongoose";
 import { UnitTypeEnum } from "./product.enum";
 
 export interface IProduct {  
+    id?: string[] | Types.ObjectId[],
     serial_number?: number,
     name?: string,
     category?: string,

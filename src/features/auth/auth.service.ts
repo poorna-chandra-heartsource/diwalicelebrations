@@ -5,14 +5,17 @@ import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { UserService } from '../user/user.service';
 import { SignUpDto } from './dto/signup.dto';
-import { PasswordUpdateDto } from './dto/password-updated.dto';
-
+import { PasswordResetDto, PasswordUpdateDto } from './dto/password-updated.dto';
+import * as crypto from 'crypto';
+import { NotificationService } from 'src/shared/api-services/notification.service';
+import appConfig from 'src/config/app.config';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
+    private notificationService: NotificationService
   ) {}
 
   // Validate user credentials
@@ -45,8 +48,47 @@ export class AuthService {
     return this.userService.signupUser(body);
   }
 
-    // Update user password
-    async updatePassword(payload: PasswordUpdateDto) {
-      return this.userService.updateUserPassword(payload);
+  async sendPasswordResetEmail(email: string): Promise<void> {
+    const token = await this.generatePasswordResetToken(email);
+    const resetLink = `${appConfig().frontendUrl}/reset-password?token=${token}`; // Replace with your frontend URL
+    await this.notificationService.passwordResetMail(email, resetLink);
+  }
+
+  // reset user password
+  async generatePasswordResetToken(email: string): Promise<string> {
+    const user = await this.userService.findByEmail(email);
+    if (!user) {
+      throw new Error('User not found');
     }
+
+    const token = crypto.randomBytes(32).toString('hex'); // Generating a random token
+
+    const expirationDate = new Date();
+    expirationDate.setHours(expirationDate.getHours() + 1); // Token expiration (1 hour) from Token generation
+
+    await this.userService.updateUserResetToken(user.email, token, expirationDate);
+
+    return token;
+  }
+
+  // async validateResetToken(token:string): Promise<boolean> {
+  //   const user = await this.userService.findByResetToken(token);
+  //   if (!user || new Date() > user.resetTokenExpires) {
+  //     return false;
+  //   }
+  //   return true;
+  // }
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    const user = await this.userService.findByResetToken(token);
+    if (!user || new Date() > user.resetTokenExpires) {
+      throw new Error('Invalid or expired token');
+    }
+  
+    const hashedPassword = await bcrypt.hash(newPassword, 10); // Use bcrypt to hash the password
+    await this.userService.updateUser(user.id, { password: hashedPassword }); // Update the user's password
+  
+    // Clear reset token after the password is reset
+    await this.userService.updateUserResetToken(user.id, null, null);
+  }
 }

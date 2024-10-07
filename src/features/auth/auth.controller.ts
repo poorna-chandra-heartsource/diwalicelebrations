@@ -4,7 +4,7 @@ import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { SignUpDto } from './dto/signup.dto';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { PasswordUpdateDto } from './dto/password-updated.dto';
+import { ForgotPasswordDto, PasswordResetDto, PasswordUpdateDto } from './dto/password-updated.dto';
 import { IUser } from '../user/interfaces/user.interface';
 
 @Controller('auth')
@@ -27,13 +27,20 @@ export class AuthController {
     return this.authService.login(loginUserDto);
   }
 
+  @Post('forgot-password')
+  async forgotPassword(@Body() payload: ForgotPasswordDto) {
+    await this.authService.sendPasswordResetEmail(payload.email);
+    return { message: 'Password reset link has been sent to your email' };
+  }
+
   @Post('reset-password')
-  @ApiOperation({ description: 'Password Update'})
-  @ApiResponse({ status: 200, description: 'Password updated successfully'})
+  @ApiOperation({ description: 'Password Reset'})
+  @ApiResponse({ status: 200, description: 'Password reset successfully'})
   @ApiResponse({ status: 400, description: 'Bad Request'})
-  updatePassword(
-      @Body() payload: PasswordUpdateDto
-  ): Promise<IUser> {
-      return this.authService.updatePassword(payload)
+  async resetPassword(
+      @Body() payload: PasswordResetDto
+  ): Promise<any> {
+    await this.authService.resetPassword(payload.token, payload.newPassword); // Implement this method in AuthService
+    return { message: 'Password successfully reset' };
   }
 }
