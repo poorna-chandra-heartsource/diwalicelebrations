@@ -1,13 +1,15 @@
 import { Injectable } from "@nestjs/common";
 import axios, { AxiosInstance, AxiosResponse } from "axios";
+import appConfig from "src/config/app.config";
 import servicesConfig from "src/config/services.config";
+import { AuthService } from "src/features/auth/auth.service";
 import { ProductService } from "src/features/products/product.service";
 import { CreateUserDto } from "src/features/user/dto/create-user.dto";
 
 @Injectable({})
 export class NotificationService {
     private notificationApiAxiosService: AxiosInstance;
-
+    private readonly authService: AuthService
     constructor(
         private readonly productService: ProductService
     ){
@@ -30,12 +32,12 @@ export class NotificationService {
         return user;
     }
 
-    async userCreationNOrderConfirmationMail(user: CreateUserDto, pwdResetLink?: boolean): Promise<AxiosResponse<any>> {
+    async userCreationNOrderConfirmationMail(user: any, pwdResetLink?: boolean): Promise<AxiosResponse<any>> {
         try {
             let products:any = await this.productService.fetchAllProducts({
                 page: 0,
                 limit: 0
-            }, {"id": user.order.orderItems.map(item => item.product_id)});
+            }, {"id": user.order.orderItems.map((item:any) => item.product_id)});
             if(products && products.data){
                 user.order.orderItems.forEach((item:any )=> {
                     let targetProduct = products.data.find((product:any) => product.id == item.product_id);
@@ -44,13 +46,14 @@ export class NotificationService {
             }
             let mailContent: any = {
                 "to": user.email,
-                "subject": "Order Confirmation",
+                "subject": `Confirmation of Your Enquiry #${user.order?.orderItems[0]?.order_id}`,
                 "name": user.full_name,
                 "order": user.order,
                 "shippingAddress": user.address
             }
             if(pwdResetLink){
-                mailContent['passwordResetLink'] = "http://yourapi.com/reset-password"
+                const token = await this.authService.generatePasswordResetToken(user.email);
+                mailContent['passwordResetLink'] = `${appConfig().frontendUrl}/reset-password?token=${token}`;
             }
 
             return await this.notificationApiAxiosService.post('/email/confirm', mailContent);
