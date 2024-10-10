@@ -36,7 +36,7 @@ export class OrderService {
 
             const {  user_id, status } = orderDetails;
 
-            if(user_id) query['user_id'] = user_id;
+            if(user_id) query['user_id'] = new Types.ObjectId(user_id);
             if(status) query['status'] = status;
 
             const totalRecords = (await this.model.find(query).exec()).length;
@@ -59,19 +59,79 @@ export class OrderService {
 
     async fetchOrderDetails(id: string | Types.ObjectId): Promise<OrderDocument | null> {
         try {
-            const query: any = {
-                '_id': id,
-                'deleted_dt': null,
-            }
-            return await this.model
-                .findOne(query)
-                .lean()
-                .exec()
-        } catch(error) {
-            console.log(`Error fetching order`)
-            return Promise.reject(error)
+            const orderId = typeof id === 'string' ? new Types.ObjectId(id) : id;
+    
+            const aggregate: any = [
+                {
+                    $match: {
+                        '_id': orderId,
+                        'deleted_dt': null,
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'order-items',
+                        localField: '_id',
+                        foreignField: 'order_id',
+                        as: 'orderItems'
+                    }
+                },
+                {
+                    $unwind: '$orderItems'
+                },
+                {
+                    $lookup: {
+                        from: 'products',
+                        localField: 'orderItems.product_id',
+                        foreignField: '_id',
+                        as: 'productInfo'
+                    }
+                },
+                {
+                    $unwind: '$productInfo'
+                },
+                {
+                    $addFields: {
+                        'orderItems.productName': '$productInfo.name'  // Add the product name to orderItems
+                    }
+                },
+                {
+                    $group: {
+                        _id: '$_id',
+                        user_id: { $first: '$user_id' },
+                        total_price: { $first: '$total_price' },
+                        status: { $first: '$status' },
+                        created_dt: { $first: '$created_dt' },
+                        orderItems: { $push: '$orderItems' }
+                    }
+                },
+                {
+                    $project: {
+                        'orderItems.product_id': 1, // Keep other orderItem fields
+                        'orderItems.productName': 1,  // Keep the added product name
+                        'orderItems.price': 1,
+                        'orderItems.quantity': 1,
+                        'orderItems.created_dt': 1,
+                        user_id: 1,
+                        total_price: 1,
+                        status: 1,
+                        created_dt: 1
+                    }
+                }
+            ];
+    
+            let orderDetails = await this.model
+                .aggregate(aggregate)
+                .exec();
+    
+            return orderDetails.length > 0 ? orderDetails[0] : null;
+        } catch (error) {
+            console.log(`Error fetching order`, error);
+            return Promise.reject(error);
         }
     }
+    
+    
 
     // bNotify is a boolean check to stop calling notificationService twice when this method is called from user service
     async createOrder(order: CreateOrderDto, bNotify: boolean): Promise<any> {
