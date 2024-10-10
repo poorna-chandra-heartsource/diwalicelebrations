@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, forwardRef, Inject } from "@nestjs/common";
 import axios, { AxiosInstance, AxiosResponse } from "axios";
 import appConfig from "src/config/app.config";
 import servicesConfig from "src/config/services.config";
@@ -9,9 +9,9 @@ import { CreateUserDto } from "src/features/user/dto/create-user.dto";
 @Injectable({})
 export class NotificationService {
     private notificationApiAxiosService: AxiosInstance;
-    private readonly authService: AuthService
     constructor(
-        private readonly productService: ProductService
+        private readonly productService: ProductService, // Use forwardRef here
+        @Inject(forwardRef(() => AuthService)) private readonly authService: AuthService // Use forwardRef here
     ){
         this.notificationApiAxiosService = axios.create({
             baseURL: servicesConfig().notificationServiceURL
@@ -34,39 +34,50 @@ export class NotificationService {
 
     async userCreationNOrderConfirmationMail(user: any, pwdResetLink?: boolean): Promise<AxiosResponse<any>> {
         try {
-            let products:any = await this.productService.fetchAllProducts({
-                page: 0,
-                limit: 0
-            }, {"id": user.order.orderItems.map((item:any) => item.product_id)});
-            if(products && products.data){
-                user.order.orderItems.forEach((item:any )=> {
-                    let targetProduct = products.data.find((product:any) => product.id == item.product_id);
-                    item['product'] = targetProduct['name']
+            // Fetch products related to the user's order
+            let products: any = await this.productService.fetchAllProducts(
+                {
+                    page: 0,
+                    limit: 0
+                },
+                { "id": user.order.orderItems.map((item: any) => item.product_id) }
+            );
+    
+            // Map product names to order items
+            if (products && products.data) {
+                user.order.orderItems.forEach((item: any) => {
+                    let targetProduct = products.data.find((product: any) => product.id == item.product_id);
+                    item['product'] = targetProduct['name'];
                 });
             }
+    
+            // Prepare the mail content
             let mailContent: any = {
                 "to": user.email,
                 "subject": `Confirmation of Your Enquiry #${user.order?.orderItems[0]?.order_id}`,
                 "name": user.full_name,
                 "order": user.order,
                 "shippingAddress": user.address
-            }
-            if(pwdResetLink){
+            };
+    
+            // Generate password reset link if required
+            if (pwdResetLink) {
                 const token = await this.authService.generatePasswordResetToken(user.email);
                 mailContent['passwordResetLink'] = `${appConfig().frontendUrl}/reset-password?token=${token}`;
             }
-
+    
+            // Only send the email after the token has been added if needed
             return await this.notificationApiAxiosService.post('/email/confirm', mailContent);
-        } catch(err) {
+        } catch (err) {
             console.log(
                 err.response?.data?.errors ||
                 err.response?.data ||
                 err.response ||
                 err
-            )
+            );
         }
-
     }
+    
 
     // async orderConfirmationMail(user: CreateUserDto): Promise<AxiosResponse<any>> {
     //     try {

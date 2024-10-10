@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, Inject, forwardRef } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
@@ -13,9 +13,9 @@ import appConfig from 'src/config/app.config';
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly userService: UserService,
+    @Inject(forwardRef(() => UserService)) private readonly userService: UserService,
     private readonly jwtService: JwtService,
-    private notificationService: NotificationService
+    @Inject(forwardRef(() => NotificationService)) private readonly notificationService: NotificationService // Use forwardRef here
   ) {}
 
   // Validate user credentials

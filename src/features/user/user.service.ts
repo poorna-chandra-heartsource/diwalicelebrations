@@ -180,7 +180,7 @@ export class UserService {
                 // Add user order
                 if (user.order) {
                     try {
-                        await this.orderService.createOrder({ user_id: newUser._id, ...user.order });
+                        await this.orderService.createOrder({ user_id: newUser._id, ...user.order }, false);
                     } catch (error) {
                         // Rollback user and address creation if subscription creation fails
                         await this.model.findByIdAndDelete(newUser._id);
@@ -203,7 +203,7 @@ export class UserService {
             // Add user order
             if (user.order) {
                 try {
-                    await this.orderService.createOrder({ user_id: userRecord._id, ...user.order });
+                    await this.orderService.createOrder({ user_id: userRecord._id, ...user.order }, false);
                 } catch (error) {
                     throw new HttpException("Failed to create order.", HttpStatus.INTERNAL_SERVER_ERROR);
                 }

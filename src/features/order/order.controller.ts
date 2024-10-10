@@ -19,7 +19,7 @@ export class OrderController {
     async addOrder(
         @Body() body: CreateOrderDto
     ): Promise<any> {
-        return this.orderService.createOrder(body)
+        return this.orderService.createOrder(body, true)
     }
 
     @Post('fetch')

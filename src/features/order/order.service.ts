@@ -73,7 +73,8 @@ export class OrderService {
         }
     }
 
-    async createOrder(order: CreateOrderDto): Promise<any> {
+    // bNotify is a boolean check to stop calling notificationService twice when this method is called from user service
+    async createOrder(order: CreateOrderDto, bNotify: boolean): Promise<any> {
         try {
             let user: any = await this.userService.fetchUserDetails(order.user_id);
             order.user_id = new Types.ObjectId(order.user_id);
@@ -94,10 +95,12 @@ export class OrderService {
                     throw new HttpException("Failed to create order items. order creation rolled back.", HttpStatus.INTERNAL_SERVER_ERROR);
                 }
             }
-            user['address'] = user.user_address[0];
-            user['order'] = order;
-            delete user.user_address;
-            await this.notificationService.userCreationNOrderConfirmationMail(user, false)
+            if(bNotify) {
+                user['address'] = user.user_address[0];
+                user['order'] = order;
+                delete user.user_address;
+                await this.notificationService.userCreationNOrderConfirmationMail(user, false)
+            } 
             return {
                 "success": true,
                 "data":"Order created successfully"
