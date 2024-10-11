@@ -47,14 +47,14 @@ export class NotificationService {
             if (products && products.data) {
                 user.order.orderItems.forEach((item: any) => {
                     let targetProduct = products.data.find((product: any) => product.id == item.product_id);
-                    item['product'] = targetProduct['name'];
+                    item['product'] = targetProduct['name'] || null;
                 });
             }
     
             // Prepare the mail content
             let mailContent: any = {
                 "to": user.email,
-                "subject": `Confirmation of Your Enquiry #${user.order?.orderItems[0]?.order_id}`,
+                "subject": `Confirmation of Your Inquiry #${user.order?.orderItems[0]?.order_id}`,
                 "name": user.full_name,
                 "order": user.order,
                 "shippingAddress": user.address
