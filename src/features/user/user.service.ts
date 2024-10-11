@@ -153,11 +153,10 @@ export class UserService {
         }
     }
 
-
     async createUser(user: CreateUserDto): Promise<UserDocument | Record<string, any>> {
         try {
             // Check if user already exists
-            const userRecord = await this.model.findOne({ email: user.email, deleted_dt: null });
+            const userRecord: any = await this.model.findOne({ email: user.email, deleted_dt: null });
             if (!userRecord) {
                 // Create new user document
                 const userDocument: UserDocument = new this.model(user);
@@ -193,7 +192,8 @@ export class UserService {
                 await this.notificationService.userCreationNOrderConfirmationMail(user, true);
                 return savedUser;
             }
-            if (user.address) {
+            const userDetails:any  = await this.fetchUserDetails(userRecord._id)
+            if (user.address && (!userDetails.user_address || userDetails.user_address?.length <= 0 )) {
                 try {
                     await this.addressService.addUserAddress({ user_id: userRecord._id, ...user.address });
                 } catch (error) {
