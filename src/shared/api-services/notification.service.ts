@@ -54,7 +54,7 @@ export class NotificationService {
             // Prepare the mail content
             let mailContent: any = {
                 "to": user.email,
-                "subject": `Confirmation of Your Inquiry #${user.order?.orderItems[0]?.order_id}`,
+                "subject": `Confirmation of your Inquiry #${user.order?.orderItems[0]?.order_id}`,
                 "name": user.full_name,
                 "order": user.order,
                 "shippingAddress": user.address

@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsString, Matches } from "class-validator";
+import { IsEmail, IsNotEmpty, IsOptional, IsString, Matches } from "class-validator";
 
 export class PasswordUpdateDto {
     @IsEmail()
@@ -20,6 +20,10 @@ export class ForgotPasswordDto {
 }
 
 export class PasswordResetDto {
+    @IsEmail()
+    @IsOptional()
+    email: string;
+
     @IsString()
     @IsNotEmpty()
     token: string;

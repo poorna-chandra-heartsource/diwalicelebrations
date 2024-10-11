@@ -18,7 +18,7 @@ import { UserModule } from '../user/user.module';
     forwardRef(() => UserModule ),
     forwardRef(() => SharedModule )
   ],
-  providers: [AuthService ],
+  providers: [AuthService, JwtStrategy ],
   controllers: [AuthController],
   exports: [AuthService]
 })
