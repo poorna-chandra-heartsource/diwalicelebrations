@@ -30,5 +30,5 @@ export class PasswordResetDto {
 
     @IsString()
     @IsNotEmpty()
-    newPassword: string;
+    password: string;
 }

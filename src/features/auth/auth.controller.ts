@@ -40,7 +40,7 @@ export class AuthController {
   async resetPassword(
       @Body() payload: PasswordResetDto
   ): Promise<any> {
-    await this.authService.resetPassword(payload.token, payload.newPassword); // Implement this method in AuthService
+    await this.authService.resetPassword(payload.token, payload.password); // Implement this method in AuthService
     return { message: 'Password successfully reset' };
   }
 }

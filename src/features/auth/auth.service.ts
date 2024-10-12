@@ -34,7 +34,7 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    const payload = { email: user.email, sub: user._id, role: user.role };
+    const payload = { email: user.email, sub: user._id };
     return {
       id: user._id,
       firstName: user.full_name,
@@ -85,10 +85,10 @@ export class AuthService {
       throw new Error('Invalid or expired token');
     }
   
-    const hashedPassword = await bcrypt.hash(newPassword, 10); // Use bcrypt to hash the password
-    await this.userService.updateUser(user.id, { password: hashedPassword }); // Update the user's password
+    // const hashedPassword = await bcrypt.hash(newPassword, 10); // Use bcrypt to hash the password
+    await this.userService.updateUser(user.id, { password: newPassword }); // Update the user's password
   
     // Clear reset token after the password is reset
-    await this.userService.updateUserResetToken(user.id, null, null);
+    await this.userService.updateUserResetToken(user.email, null, null);
   }
 }
