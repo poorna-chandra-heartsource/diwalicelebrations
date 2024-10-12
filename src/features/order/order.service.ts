@@ -134,10 +134,10 @@ export class OrderService {
     
 
     // bNotify is a boolean check to stop calling notificationService twice when this method is called from user service
-    async createOrder(order: CreateOrderDto, bNotify: boolean): Promise<any> {
+    async createOrder(user_id: string | Types.ObjectId, order: CreateOrderDto, bNotify: boolean): Promise<any> {
         try {
-            let user: any = await this.userService.fetchUserDetails(order.user_id);
-            order.user_id = new Types.ObjectId(order.user_id);
+            let user: any = await this.userService.fetchUserDetails(user_id);
+            order.user_id = new Types.ObjectId(user_id);
             let orderDocument : OrderDocument = new this.model(order)
             await orderDocument.save();
             let newOrder = orderDocument.toJSON();
@@ -156,7 +156,7 @@ export class OrderService {
                 }
             }
             if(bNotify) {
-                user['address'] = user.user_address[0];
+                user['address'] = user?.user_address[0];
                 user['order'] = order;
                 delete user.user_address;
                 await this.notificationService.userCreationNOrderConfirmationMail(user, false)

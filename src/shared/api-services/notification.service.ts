@@ -119,8 +119,9 @@ export class NotificationService {
             const mailOptions = {
                 to: email,
                 subject: 'Password Reset Request',
-                html: `<p>You requested a password reset. Click the link below to reset your password:</p>
-                       <a href="${resetLink}">${resetLink}</a>`,
+                html: `<p>You recently requested to reset your password. To proceed, please click the link below:</p>
+                       <a href="${resetLink}">${resetLink}</a></br/>
+                       <p>If you did not request this password reset, please ignore this email, and your account will remain secure.</p>`,
               };
 
             return await this.notificationApiAxiosService.post('/email/send', mailOptions);

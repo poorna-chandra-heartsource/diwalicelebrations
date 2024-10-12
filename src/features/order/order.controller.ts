@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put, Query } from "@nestjs/common";
+import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put, Query, Req, Request, UseGuards } from "@nestjs/common";
 import { OrderService } from "./order.service";
 import { CreateOrderDto } from "./dto/create-order.dto";
 import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from "@nestjs/swagger";
@@ -7,19 +7,23 @@ import { ParseObjectIdPipe } from "src/pipes/parse-object-id.pipe";
 import { UpdatedResponseInterface } from "../../shared/interfaces";
 import { OrderDetailsDto } from "./dto/order-details.dto";
 import { IOrder } from "./interfaces/order.interface";
+import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 
 @Controller('orders')
 export class OrderController {
     constructor(private orderService: OrderService){}
 
+    @UseGuards(JwtAuthGuard)
     @Post('')
     @ApiOperation({ description: 'Add Order'})
     @ApiResponse({ status: 200, description: 'Order added successfully'})
     @ApiResponse({ status: 400, description: 'Bad Request'})
     async addOrder(
-        @Body() body: CreateOrderDto
+        @Req() req: any,
+        @Body() body: CreateOrderDto,
     ): Promise<any> {
-        return this.orderService.createOrder(body, true)
+        const user = req.user; // Access the authenticated user data
+        return this.orderService.createOrder(user.userId, body, true)
     }
 
     @Post('fetch')
@@ -51,6 +55,7 @@ export class OrderController {
         return order
     }
 
+    @UseGuards(JwtAuthGuard) 
     @Put(':id')
     @ApiOperation({ description: 'Update Order details'})
     @ApiResponse({ status: 200, description: 'Order details updated successfully'})
@@ -66,7 +71,7 @@ export class OrderController {
         return order
     }
 
-    
+    @UseGuards(JwtAuthGuard) 
     @Delete(':id')
     @ApiOperation({ description: 'Delete Order details'})
     @ApiResponse({ status: 200, description: 'Order details deleted successfully'})
