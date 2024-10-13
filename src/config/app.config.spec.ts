@@ -8,7 +8,7 @@ describe('App Configuration Suite', () => {
 
   // Mock environment variables
   process.env.NODE_ENV = 'local';
-  process.env.APP_PORT = '3000';
+  process.env.APP_PORT = '3001';
   process.env.APP_HOST = 'localhost';
   process.env.APP_NAME = 'Todo';
   process.env.APP_VERSION = '1.0.0';
@@ -19,7 +19,7 @@ describe('App Configuration Suite', () => {
 
     // Assertions
     expect(config.env).toBe('local');
-    expect(config.port).toBe(3000);
+    expect(config.port).toBe(3001);
     expect(config.host).toBe('localhost');
     expect(config.name).toBe('Todo');
     expect(config.version).toBe('1.0.0');

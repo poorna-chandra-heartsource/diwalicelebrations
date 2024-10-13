@@ -1,23 +1,41 @@
-# Use Node.js LTS version as the base image
-FROM node:lts-alpine
+# Stage 1: Build the application
+FROM node:18-alpine AS builder
 
-# Set the working directory in the container
-WORKDIR /usr/src/app
+# Set the working directory inside the container
+WORKDIR /app
 
-# Copy package.json and package-lock.json to the container
+# Copy package.json and package-lock.json
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install --production
+RUN npm install
 
-# Copy the rest of the application code to the container
+# Copy the rest of the application code
 COPY . .
 
-# Build the NestJS application
+# Build the application
 RUN npm run build
 
-# Expose the application port (default is 3000)
+# Stage 2: Prepare the production image
+FROM node:18-alpine
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy only the necessary files from the build stage
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package*.json ./
+
+# Install only production dependencies
+RUN npm install --only=production
+
+# Set default environment file
+ARG ENV_FILE=.env.dev.properties
+# Copy the environment file into the build context
+COPY ./env/${ENV_FILE} .env
+
+# Expose the application port
 EXPOSE 3000
 
-# Command to run the NestJS application
-CMD ["npm", "run", "start:prod"]
+# Command to run the application
+CMD ["node", "dist/src/main.js"]
