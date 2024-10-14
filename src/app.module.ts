@@ -23,6 +23,7 @@ import { AuthModule } from './features/auth/auth.module';
 import { ProductModule } from './features/products/product.module';
 import { OrderModule } from './features/order/order.module';
 import { OrderItemModule } from './features/order-items/order-item.module';
+import { GiftBoxModule } from './features/giftboxes/giftbox.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { OrderItemModule } from './features/order-items/order-item.module';
     UserModule,
     AddressModule,
     ProductModule,
+    GiftBoxModule,
     OrderModule,
     OrderItemModule
   ],

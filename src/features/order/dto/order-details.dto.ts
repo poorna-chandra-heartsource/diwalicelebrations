@@ -4,11 +4,6 @@ import { IOrder } from "../interfaces/order.interface";
 import { Types } from "mongoose";
 
 export class OrderDetailsDto implements IOrder{
-    @IsString()
-    @IsMongoId()
-    @IsOptional()
-    user_id?: string | Types.ObjectId;
-
     @IsNumber()
     @IsOptional()
     total_price?: number;

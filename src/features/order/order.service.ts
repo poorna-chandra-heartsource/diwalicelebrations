@@ -21,7 +21,7 @@ export class OrderService {
         @Inject(forwardRef(() => UserService)) private readonly userService: UserService // Use forwardRef here
     ) {}
 
-    async fetchAllOrders(pageOptionsRequestDto: PageOptionsRequestDto, orderDetails: IOrder): Promise<PageDto<IOrder[]>> {
+    async fetchAllOrders(user_id:string | Types.ObjectId, pageOptionsRequestDto: PageOptionsRequestDto, orderDetails: IOrder): Promise<PageDto<IOrder[]>> {
         
         try {
             let query: any = {
@@ -34,9 +34,10 @@ export class OrderService {
                 sort_order = SortOrder.Ascending,
             } = pageOptionsRequestDto;
 
-            const {  user_id, status } = orderDetails;
+            const {  total_price, status } = orderDetails;
 
             if(user_id) query['user_id'] = new Types.ObjectId(user_id);
+            if(total_price) query['total_price'] = total_price;
             if(status) query['status'] = status;
 
             const totalRecords = (await this.model.find(query).exec()).length;

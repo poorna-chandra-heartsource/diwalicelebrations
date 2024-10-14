@@ -26,6 +26,7 @@ export class OrderController {
         return this.orderService.createOrder(user.userId, body, true)
     }
 
+    @UseGuards(JwtAuthGuard) 
     @Post('fetch')
     @ApiOperation({ description: 'Fetch Orders'})
     @ApiResponse({ status: 200, description: 'Orders fetched successfully'})
@@ -36,11 +37,14 @@ export class OrderController {
     @ApiQuery({ name: 'sort_order', type: String, required: false })
     fetchOrders(
         @Query() queryParams: PageOptionsRequestDto,
-        @Body() payload: OrderDetailsDto
+        @Body() payload: OrderDetailsDto,
+        @Req() req: any
     ): Promise<PageDto<IOrder[]>> {
-        return this.orderService.fetchAllOrders(queryParams, payload)
+        const user = req.user;
+        return this.orderService.fetchAllOrders(user.userId, queryParams, payload)
     }
 
+    @UseGuards(JwtAuthGuard) 
     @Get(':id')
     @ApiOperation({ description: 'Fetch Order details'})
     @ApiResponse({ status: 200, description: 'Order details fetched successfully'})
@@ -48,7 +52,7 @@ export class OrderController {
     @ApiResponse({ status: 400, description: 'Bad Request'})
     @ApiParam({ name: 'id', type: String, description: 'Order Id'})
     async fetchOrderDetails(
-        @Param('id', ParseObjectIdPipe) id: string
+        @Param('id', ParseObjectIdPipe) id: string,
     ): Promise<IOrder> {
         const order = await this.orderService.fetchOrderDetails(id);
         if(!order) throw new NotFoundException(`Order with id ${id} not found`);
