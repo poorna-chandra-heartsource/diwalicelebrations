@@ -22,7 +22,7 @@ async function bootstrap() {
   await globalPipe(app);
   // security middlewares
   await securityMiddleware(app);
-  await corsMiddleware(app);
+  //await corsMiddleware(app);
   await bodyParserMiddleware(app);
 
   await app.listen(appConfig().port, () =>
