@@ -18,7 +18,6 @@ import { Logger } from './shared/logger/logger.service';
 import { UserModule } from './features/user/user.module';
 import { AddressModule } from './features/address/address.module';
 import { JwtModule } from '@nestjs/jwt';
-import { jwtConstants } from './features/auth/jwt.constants';
 import { AuthModule } from './features/auth/auth.module';
 import { ProductModule } from './features/products/product.module';
 import { OrderModule } from './features/order/order.module';

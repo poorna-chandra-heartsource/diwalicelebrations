@@ -1,4 +1,4 @@
-import { IsEmail, IsEnum, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsPhoneNumber, IsString } from "class-validator";
+import { IsEmail, IsEnum, IsMongoId, IsNotEmpty, IsNumber, IsNumberString, IsOptional, IsPhoneNumber, IsString } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { IAddress } from "../interfaces/adress.interface";
 
@@ -16,9 +16,9 @@ export class AddressDetailsDto implements IAddress {
     @IsOptional()
     state: string;
 
-    @IsNumber()
+    @IsNumberString()
     @IsOptional()
-    pincode: number;
+    pincode: string;
 
     @IsString()
     @IsOptional()

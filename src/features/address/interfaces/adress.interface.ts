@@ -1,10 +1,10 @@
 import { Types } from "mongoose";
 
 export interface IAddress {
-    user_id: string | Types.ObjectId,
+    user_id?: string | Types.ObjectId,
     city: string,
     state: string,
-    pincode: number,
+    pincode: string,
     addressLine1: string,
     addressLine2: string,
     landmark: string,

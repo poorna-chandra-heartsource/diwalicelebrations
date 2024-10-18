@@ -9,17 +9,17 @@ spec:
   replicas: 1  # Number of pods to run
   selector:
     matchLabels:
-      app: diwali-be
+      app: diwali-be  # label by which pod can be selected
   template:
     metadata:
       labels:
-        app: diwali-be
+        app: diwali-be # label by which pod can be selected
     spec:
       containers:
-      - name: diwali-be-container
-        image: poornagollakoti/diwali-be:1.0.0  # Replace with your Docker image
+      - name: diwali-be
+        image: diwali.azurecr.io/diwali-be-app:1.0.6  # Replace with your Docker image
         ports:
-        - containerPort: 3001
+        - containerPort: 3000
         envFrom:
         - configMapRef:
             name: backend-configmap-dev
@@ -32,18 +32,6 @@ spec:
           requests:
             memory: "128Mi"
             cpu: "250m"
-        readinessProbe:
-          httpGet:
-            path: "/health"
-            port: 3001
-          initialDelaySeconds: 10
-          periodSeconds: 5
-        livenessProbe:
-          httpGet:
-            path: "/health"
-            port: 3001
-          initialDelaySeconds: 15
-          periodSeconds: 20
       restartPolicy: Always
 ---
 apiVersion: v1
@@ -51,12 +39,12 @@ kind: Service
 metadata:
   name: diwali-be-service
   labels:
-    app: diwali-be
+    app: diwali-be-service
 spec:
-  type: ClusterIP  # You can change it to LoadBalancer for external access
+  type: LoadBalancer  # You can change it to LoadBalancer for external access
   selector:
-    app: diwali-be
+    app: diwali-be # select the pod and expose
   ports:
     - protocol: TCP
-      port: 80
-      targetPort: 3001
+      port: 3000 # The service exposes the application externally on this port
+      targetPort: 3000 # Forward traffic to the application's port inside the container

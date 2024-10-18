@@ -9,6 +9,7 @@ import { PasswordResetDto, PasswordUpdateDto } from './dto/password-updated.dto'
 import * as crypto from 'crypto';
 import { NotificationService } from 'src/shared/api-services/notification.service';
 import appConfig from 'src/config/app.config';
+import { decrypt } from 'src/shared/util';
 
 @Injectable()
 export class AuthService {
@@ -49,6 +50,10 @@ export class AuthService {
   }
 
   async sendPasswordResetEmail(email: string): Promise<void> {
+    const user = await this.userService.findByEmail(email);
+    if (!user) {
+      throw new Error('User not found');
+    }
     const token = await this.generatePasswordResetToken(email);
     const resetLink = `${appConfig().frontendUrl}/reset-password?token=${token}`; // Replace with your frontend URL
     await this.notificationService.passwordResetMail(email, resetLink);
@@ -89,6 +94,7 @@ export class AuthService {
     await this.userService.updateUser(user.id, { password: newPassword }); // Update the user's password
   
     // Clear reset token after the password is reset
-    await this.userService.updateUserResetToken(user.email, null, null);
+    const descryptedEmail = decrypt(user.email)
+    await this.userService.updateUserResetToken(descryptedEmail, null, null);
   }
 }

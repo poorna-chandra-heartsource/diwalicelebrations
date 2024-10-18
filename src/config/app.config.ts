@@ -6,5 +6,7 @@ export default registerAs('appConfig', () => ({
   host: process.env.APP_HOST,
   name: process.env.APP_NAME,
   version: process.env.APP_VERSION,
-  frontendUrl: process.env.APP_FRONTEND_URL
+  frontendUrl: process.env.APP_FRONTEND_URL,
+  jwtSecretKey: process.env.JWT_SECRET_KEY,
+  encryptionKey: process.env.ENCRYPTION_KEY
 }));

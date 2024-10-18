@@ -4,15 +4,15 @@ import { PassportModule } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
-import { jwtConstants } from './jwt.constants';
 import { SharedModule } from 'src/shared/shared.module';
 import { UserModule } from '../user/user.module';
+import appConfig from 'src/config/app.config';
 
 @Module({
   imports: [
     PassportModule,
     JwtModule.register({
-      secret: jwtConstants.secret,
+      secret: 'diwali',
       signOptions: { expiresIn: '1h' }, // Token expires in 1 hour
     }),
     forwardRef(() => UserModule ),

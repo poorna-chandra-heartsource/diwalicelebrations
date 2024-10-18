@@ -13,6 +13,7 @@ import * as bcrypt from 'bcrypt';
 import { SignUpDto } from "../auth/dto/signup.dto";
 import { OrderService } from "../order/order.service";
 import { NotificationService } from "src/shared/api-services/notification.service";
+import { encrypt, decrypt } from '../../shared/util';
 
 @Injectable({})
 export class UserService {
@@ -105,7 +106,33 @@ export class UserService {
                 }
             ]).exec();
 
-            return result.length > 0 ? result[0] : null;
+            if (result.length === 0) return null;
+
+            // Assuming result[0] is the user document
+            const user = result[0];
+    
+            // Decrypting user fields
+            user.full_name = decrypt(user.full_name);
+            user.email = decrypt(user.email); // Decrypt email
+            user.mobile = decrypt(user.mobile); // Decrypt phone
+    
+            // Decrypting user addresses if present
+            if (user.user_address && user.user_address.length > 0) {
+                user.user_address = user.user_address.map((address: any) => {
+                    return {
+                        ...address,
+                        // Decrypt any address fields if necessary
+                        city: decrypt(address.city),
+                        pincode: decrypt(address.pincode),
+                        state: decrypt(address.state),
+                        addressLine1: decrypt(address.addressLine1),
+                        addressLine2: address.addressLine2 ? decrypt(address.addressLine2) : null, // Conditional decryption
+                        landmark: address.landmark ? decrypt(address.landmark) : null // Conditional decryption
+                    };
+                });
+            }
+    
+            return user;
         } catch (error) {
             console.error('Error fetching user details:', error);
             return Promise.reject(error);
@@ -114,30 +141,22 @@ export class UserService {
 
     async findByEmail(email: string): Promise<UserDocument | null> {
         try {
-            return await this.model.findOne({ email }).lean().exec();
-        } catch (error) {
-            console.error('Error fetching user details:', error);
-            return Promise.reject(error);
-        }
-    }
+            // Encrypt the email before checking for existing user
+            const encryptedEmail = encrypt(email);
+            let user = await this.model.findOne({ email: encryptedEmail }).lean().exec();
+            // Decrypt the encrypted fields
+            const decryptedEmail = decrypt(user.email);
+            const decryptedPhone = decrypt(user.mobile);
+            const decryptedFullName = decrypt(user.full_name);
 
-    async findByResetToken(token: string): Promise<UserDocument | undefined> {
-        try {
-            return this.model.findOne({ resetToken: token });
+            // Return the user data with decrypted fields
+            return {
+                ...user,
+                email: decryptedEmail,
+                mobile: decryptedPhone,
+                full_name: decryptedFullName,
+                };
         } catch (error) {
-            console.error('Error fetching user details:', error);
-            return Promise.reject(error);
-        }
-    }
-
-    async updateUserResetToken(email: string, token: string, expiration: Date): Promise<void> {
-        try {
-            await this.model.updateOne({email}, {
-            resetToken: token,
-            resetTokenExpires: expiration,
-            });
-        }
-        catch (error) {
             console.error('Error fetching user details:', error);
             return Promise.reject(error);
         }
@@ -153,13 +172,73 @@ export class UserService {
         }
     }
 
+    // Fetch User PII and decrypt fields
+    // async getUserPIIData(userId: string) {
+    //     const user = await this.model.findById(userId);
+
+    //     if (!user) {
+    //         throw new NotFoundException(`User with ID ${userId} not found`);
+    //     }
+
+    //     // Decrypt the encrypted fields
+    //     const decryptedEmail = decrypt(user.email);
+    //     const decryptedPhone = decrypt(user.phone);
+    //     const decryptedAddress = decrypt(user.address);
+
+    //     // Return the user data with decrypted fields
+    //     return {
+    //         ...user.toObject(),
+    //         email: decryptedEmail,
+    //         phone: decryptedPhone,
+    //         address: decryptedAddress,
+    //     };
+    // }
+
+    
+    async findByResetToken(token: string): Promise<UserDocument | undefined> {
+        try {
+            return this.model.findOne({ resetToken: token });
+        } catch (error) {
+            console.error('Error fetching user details:', error);
+            return Promise.reject(error);
+        }
+    }
+
+    async updateUserResetToken(email: string, token: string, expiration: Date): Promise<void> {
+        try {
+            const encryptedEmail = encrypt(email);
+            await this.model.updateOne({ email: encryptedEmail }, {
+                resetToken: token,
+                resetTokenExpires: expiration,
+            });
+        }
+        catch (error) {
+            console.error('Error fetching user details:', error);
+            return Promise.reject(error);
+        }
+    }
     async createUser(user: CreateUserDto): Promise<UserDocument | Record<string, any>> {
         try {
-            // Check if user already exists
-            const userRecord: any = await this.model.findOne({ email: user.email, deleted_dt: null });
+            // Encrypt sensitive fields (email, phone, address) before saving
+            const encryptedUserData = {
+                ...user,
+                full_name: encrypt(user.full_name),
+                email: encrypt(user.email),
+                mobile: user.mobile ? encrypt(user.mobile) : null,
+                address: user.address ? {
+                    city: encrypt(user.address.city),
+                    state: encrypt(user.address.state),
+                    pincode: encrypt(user.address.pincode.toString()), // Ensure pincode is a string for encryption
+                    addressLine1: encrypt(user.address.addressLine1),
+                    addressLine2: user.address.addressLine2 ? encrypt(user.address.addressLine2) : null,
+                    landmark: user.address.landmark ? encrypt(user.address.landmark) : null,
+                } : null,
+            };
+            const userRecord: any = await this.model.findOne({ email: encryptedUserData.email, deleted_dt: null });
             if (!userRecord) {
-                // Create new user document
-                const userDocument: UserDocument = new this.model(user);
+
+                // Create new user document with encrypted data
+                const userDocument: UserDocument = new this.model(encryptedUserData);
 
                 // Save user to the database
                 const savedUser: UserDocument = await userDocument.save();
@@ -169,7 +248,7 @@ export class UserService {
                 // Add user address
                 if (user.address) {
                     try {
-                        await this.addressService.addUserAddress({ user_id: newUser._id, ...user.address });
+                        await this.addressService.addUserAddress({ user_id: newUser._id, ...encryptedUserData.address });
                     } catch (error) {
                         // Rollback user creation if address creation fails
                         await this.model.findByIdAndDelete(newUser._id);
@@ -179,7 +258,7 @@ export class UserService {
                 // Add user order
                 if (user.order) {
                     try {
-                        await this.orderService.createOrder( newUser._id, user.order, false);
+                        await this.orderService.createOrder(newUser._id, user.order, false);
                     } catch (error) {
                         // Rollback user and address creation if subscription creation fails
                         await this.model.findByIdAndDelete(newUser._id);
@@ -192,10 +271,10 @@ export class UserService {
                 await this.notificationService.userCreationNOrderConfirmationMail(user, true);
                 return savedUser;
             }
-            const userDetails:any  = await this.fetchUserDetails(userRecord._id)
-            if (user.address && (!userDetails.user_address || userDetails.user_address?.length <= 0 )) {
+            const userDetails: any = await this.fetchUserDetails(userRecord._id)
+            if (user.address && (!userDetails.user_address || userDetails.user_address?.length <= 0)) {
                 try {
-                    await this.addressService.addUserAddress({ user_id: userRecord._id, ...user.address });
+                    await this.addressService.addUserAddress({ user_id: userRecord._id, ...encryptedUserData.address });
                 } catch (error) {
                     throw new HttpException("Failed to create user address.", HttpStatus.INTERNAL_SERVER_ERROR);
                 }
@@ -212,7 +291,7 @@ export class UserService {
             await this.notificationService.userCreationNOrderConfirmationMail(user, false)
             return {
                 "success": true,
-                "data":"Order created successfully"
+                "data": "Order created successfully"
             };
         } catch (error) {
             console.log(`Error creating user`)
@@ -223,13 +302,13 @@ export class UserService {
     async signupUser(user: SignUpDto): Promise<UserDocument> {
         try {
             // Check if user already exists by email or mobile
-            const existingUser  = await this.model.findOne({ 
+            const existingUser = await this.model.findOne({
                 deleted_dt: null,
                 '$or': [
-                    { mobile: user.mobile }, 
-                    {email: user.email }
+                    { mobile: user.mobile },
+                    { email: user.email }
                 ]
-             });
+            });
 
             // Throw appropriate error if either mobile or email already exists
             if (existingUser && existingUser.mobile === user.mobile) {
@@ -248,7 +327,7 @@ export class UserService {
             // Save user to the database
             const savedUser: UserDocument = await userDocument.save();
 
-             // Convert the saved user to a plain object and remove the password field
+            // Convert the saved user to a plain object and remove the password field
             const userWithoutPassword = savedUser.toObject({
                 versionKey: false,        // Optional: Removes the __v field if needed
                 transform: (doc, ret) => {
@@ -264,28 +343,28 @@ export class UserService {
         }
     }
 
-    async resetPassword(email: string): Promise<UserDocument> {
-        try {
-            let query: any = {
-                'email': email,
-                '$or': [
-                    {
-                        'deleted_dt': null,
-                    },
-                    {
-                        'deleted_dt': {
-                            '$exists': false
-                        },
-                    }
-                ]
+    // async resetPassword(email: string): Promise<UserDocument> {
+    //     try {
+    //         let query: any = {
+    //             'email': email,
+    //             '$or': [
+    //                 {
+    //                     'deleted_dt': null,
+    //                 },
+    //                 {
+    //                     'deleted_dt': {
+    //                         '$exists': false
+    //                     },
+    //                 }
+    //             ]
 
-            };
-            let userRecord = await this.model.findOne(query).exec();
-        } catch (error) {
-            console.log(`Error resetting password`)
-            return Promise.reject(error)
-        }
-    }
+    //         };
+    //         let userRecord = await this.model.findOne(query).exec();
+    //     } catch (error) {
+    //         console.log(`Error resetting password`)
+    //         return Promise.reject(error)
+    //     }
+    // }
 
     async updateUser(id: Types.ObjectId | string, user: IUser): Promise<UserDocument> {
         try {

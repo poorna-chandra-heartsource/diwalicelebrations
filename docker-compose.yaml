@@ -1,19 +1,11 @@
 services:
   diwali-be:
-    image: poornagollakoti/diwali-be:1.0.0  # Replace with your Docker image
+    image: diwali.azurecr.io/diwali-be-app:1.0.6  # Replace with your Docker image
     build:
       context: .
       dockerfile: Dockerfile
       args:
         ENV_FILE: .env.dev.properties
     ports:
-      - "3001:3000"
+      - "3000:3000"
     restart: always
-    healthcheck:
-      test: ["CMD-SHELL", "curl --fail http://localhost:3001/health || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-volumes:
-  db-data:

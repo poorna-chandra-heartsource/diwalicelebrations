@@ -13,8 +13,8 @@ export class Address implements IAddress {
     @Prop({ type: String, required: true })
     state: string;
 
-    @Prop({ type: Number, required: true, length: 6 })
-    pincode: number;
+    @Prop({ type: String, required: true })
+    pincode: string;
 
     @Prop({ type: String, min: 4, max:300 })
     addressLine1: string;

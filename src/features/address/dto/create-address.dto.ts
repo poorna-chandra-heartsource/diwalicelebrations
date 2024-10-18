@@ -5,8 +5,8 @@ import { IAddress } from "../interfaces/adress.interface";
 export class AddressDto implements IAddress{
     @IsString()
     @IsMongoId()
-    @IsNotEmpty()
-    user_id: string;
+    @IsOptional()
+    user_id?: string;
 
     @IsString()
     @IsNotEmpty({ message: 'city is required' })
@@ -18,7 +18,7 @@ export class AddressDto implements IAddress{
 
     @IsNumberString()
     @IsNotEmpty({ message: 'pincode is required' })
-    pincode: number;
+    pincode: string;
 
     @IsString({ message: 'addressLine1 must be a string' })
     @IsNotEmpty({ message: 'addressLine1 is required' })
@@ -53,5 +53,5 @@ export class CreateAddressDto extends AddressDto {
 export class CreateUserAddressDto extends AddressDto {
     @IsMongoId({ message: 'user_id must be a valid MongoDB ID' })
     @IsOptional()
-    user_id: string;
+    user_id?: string;
 }
