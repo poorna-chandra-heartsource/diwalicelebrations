@@ -144,6 +144,9 @@ export class UserService {
             // Encrypt the email before checking for existing user
             const encryptedEmail = encrypt(email);
             let user = await this.model.findOne({ email: encryptedEmail }).lean().exec();
+            if (!user) {
+                throw new Error('User not found');
+              }
             // Decrypt the encrypted fields
             const decryptedEmail = decrypt(user.email);
             const decryptedPhone = decrypt(user.mobile);

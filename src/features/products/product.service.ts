@@ -109,7 +109,7 @@ export class ProductService {
                       }
                     },
                     {
-                      $sort: { productCount: -1 }  // Optional: Sort by product count in descending order
+                      $sort: { product_category: 1 }  // Optional: Sort by product count in descending order
                     }
                   ]);
                   
