@@ -25,23 +25,26 @@ spec:
             name: backend-configmap-dev
         - secretRef:
             name: backend-secret-dev
-        resources:
-          limits:
-            memory: "256Mi"
-            cpu: "500m"
-          requests:
-            memory: "128Mi"
-            cpu: "250m"
+        # resources:
+        #   limits:
+        #     memory: "256Mi"
+        #     cpu: "500m"
+        #   requests:
+        #     memory: "128Mi"
+        #     cpu: "250m"
       restartPolicy: Always
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: diwali-be-service
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-resource-group: "product_service_rg"
   labels:
     app: diwali-be-service
 spec:
   type: LoadBalancer  # You can change it to LoadBalancer for external access
+  loadBalancerIP: 52.190.10.71 # Replace with your static IP
   selector:
     app: diwali-be # select the pod and expose
   ports:
