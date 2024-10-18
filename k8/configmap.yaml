@@ -14,7 +14,7 @@ data:
   APP_SWAGGER_PATH: "api-docs"
   CORS_ORIGIN: "*"
   CORS_CREDENTIALS: "true"
-  CORS_EXPOSED_HEADERS: "Accept,authorization,Authentication,Content-Type,If-None-Match,SourceType"
+  CORS_EXPOSED_HEADERS: "Accept,Authorization,authorization,Authentication,Content-Type,If-None-Match,SourceType"
   MONGO_SSL_CRT_PATH: ""
   MONGO_DB_NAME: "diwali"
   LOGGER_LEVEL: "info"

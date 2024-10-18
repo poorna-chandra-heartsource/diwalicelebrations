@@ -6,6 +6,6 @@ export default registerAs(
   (): CorsOptions => ({
     origin: process.env.CORS_ORIGIN.split(','),
     credentials: process.env.CORS_CREDENTIALS === 'true' ? true : false,
-    exposedHeaders: process.env.CORS_EXPOSED_HEADERS,
+    exposedHeaders: ['Accept', 'Authorization', 'Authentication', 'Content-Type', 'If-None-Match', 'SourceType'],
   }),
 );
