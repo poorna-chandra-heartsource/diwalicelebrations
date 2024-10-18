@@ -19,4 +19,4 @@ data:
   MONGO_DB_NAME: "diwali"
   LOGGER_LEVEL: "info"
   LOGGER_FILE_NAME: "./logs/logs.log"
-  NOTIFICATION_SERVICE_URL: "http://52.170.235.122:3002"
+  NOTIFICATION_SERVICE_URL: "http://notification-app-service:3002"
