@@ -18,8 +18,20 @@ async function bootstrap() {
    * file to invoke setup and middleware methods/functions instead.
    */
 
+  const allowedOrigins = [
+    'http://40.121.150.44',
+    'https://40.121.150.44',
+    'http://diwaliinquiries.in',
+    'https://diwaliinquiries.in',
+    'http://localhost:3000',  // Add more domains as needed
+  ];
+
   app.use((req: any, res: any, next: any) => {
-    res.setHeader('Access-Control-Allow-Origin', 'http://40.121.150.44');  // Change this to the exact frontend URL
+    const origin = req.headers.origin;
+  
+    if (allowedOrigins.includes(origin)) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+    }
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     res.setHeader('Access-Control-Allow-Credentials', true);

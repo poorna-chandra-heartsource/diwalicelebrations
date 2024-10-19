@@ -1,6 +1,6 @@
 services:
   diwali-be:
-    image: diwali.azurecr.io/diwali-be-app:1.1.0 # Replace with your Docker image
+    image: diwali.azurecr.io/diwali-be-app:1.1.1 # Replace with your Docker image
     build:
       context: .
       dockerfile: Dockerfile
