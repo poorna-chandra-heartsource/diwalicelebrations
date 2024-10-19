@@ -9,7 +9,7 @@ data:
   APP_PORT: "3000"
   APP_HOST: "http://52.190.10.71:3000"
   APP_BASE_URL: "http://52.190.10.71:3000"
-  APP_FRONTEND_URL: "http://4.255.113.175:3000"
+  APP_FRONTEND_URL: "http://diwaliinquiries.in"
   APP_VERSION: "1.0.0"
   APP_SWAGGER_PATH: "api-docs"
   CORS_ORIGIN: "*"
