@@ -58,6 +58,42 @@ export class OrderService {
         
     }
 
+    async listOrders(pageOptionsRequestDto: PageOptionsRequestDto, orderDetails: IOrder): Promise<PageDto<IOrder[]>> {
+        
+        try {
+            let query: any = {
+                'deleted_dt': null
+            };
+            const {
+                page,
+                limit = 10,
+                sort_field = 'created_dt',
+                sort_order = SortOrder.Ascending,
+            } = pageOptionsRequestDto;
+
+            const {  total_price, status } = orderDetails;
+
+            if(total_price) query['total_price'] = total_price;
+            if(status) query['status'] = status;
+
+            const totalRecords = (await this.model.find(query).exec()).length;
+
+            const orderPagination = new PagePaginationDto({pageOptionsRequestDto, totalRecords});
+
+            const sortCriteria: Record<string, 1 | -1 > = { [sort_field] : sort_order.toLowerCase() === SortOrder.Ascending ? 1 : -1 };
+            
+            const orderResponse: OrderDocument[] = await this.model.find(query)
+                                                    .sort(sortCriteria)
+                                                    .skip(PageOptionsRequestDto.skip(page, limit))
+                                                    .limit(limit)
+            return new PageDto<OrderDocument[]>(orderResponse, orderPagination)
+        } catch(err) {
+            console.log(`Error fetching orders`)
+            return Promise.reject(err)
+        }
+        
+    }
+
     async fetchOrderDetails(id: string | Types.ObjectId): Promise<OrderDocument | null> {
         try {
             const orderId = typeof id === 'string' ? new Types.ObjectId(id) : id;

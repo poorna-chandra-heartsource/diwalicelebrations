@@ -9,7 +9,7 @@ import { UserDetailsDto } from "./dto/user-details.dto";
 import { IUser } from "./interfaces/user.interface";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 
-@Controller('users')
+@Controller('/api/users')
 export class UserController {
     constructor(private userService: UserService){}
 

@@ -7,7 +7,7 @@ import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ForgotPasswordDto, PasswordResetDto, PasswordUpdateDto } from './dto/password-updated.dto';
 import { IUser } from '../user/interfaces/user.interface';
 
-@Controller('auth')
+@Controller('/api/auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService

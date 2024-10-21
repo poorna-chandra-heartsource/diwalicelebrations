@@ -8,7 +8,7 @@ import { UpdatedResponseInterface } from "../../shared/interfaces";
 import { OrderItemDetailsDto } from "./dto/order-item-details.dto";
 import { IOrderItem } from "./interfaces/order-item.interface";
 
-@Controller('order-items')
+@Controller('/api/order-items')
 export class OrderItemController {
     constructor(private orderItemService: OrderItemService){}
 

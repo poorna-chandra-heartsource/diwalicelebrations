@@ -8,7 +8,7 @@ import { ProductDetailsDto } from "./dto/product-details.dto";
 import { ParseObjectIdPipe } from "src/pipes/parse-object-id.pipe";
 import { UpdatedResponseInterface } from "../../shared/interfaces";
 
-@Controller('products')
+@Controller('/api/products')
 export class ProductController {
     constructor(
         private productService: ProductService

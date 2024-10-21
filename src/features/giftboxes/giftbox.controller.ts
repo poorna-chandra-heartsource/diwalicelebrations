@@ -4,7 +4,7 @@ import { GiftBoxService } from "./giftbox.service";
 import { IGiftBox } from "./interfaces/giftbox.interface";
 import { ParseObjectIdPipe } from "src/pipes/parse-object-id.pipe";
 
-@Controller('giftbox')
+@Controller('/api/giftbox')
 export class GiftBoxController {
     constructor(
         private giftboxService: GiftBoxService

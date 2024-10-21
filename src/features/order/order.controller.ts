@@ -9,7 +9,7 @@ import { OrderDetailsDto } from "./dto/order-details.dto";
 import { IOrder } from "./interfaces/order.interface";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 
-@Controller('orders')
+@Controller('/api/orders')
 export class OrderController {
     constructor(private orderService: OrderService){}
 
@@ -42,6 +42,21 @@ export class OrderController {
     ): Promise<PageDto<IOrder[]>> {
         const user = req.user;
         return this.orderService.fetchAllOrders(user.userId, queryParams, payload)
+    }
+
+    @Post('list')
+    @ApiOperation({ description: 'List Orders'})
+    @ApiResponse({ status: 200, description: 'Orders fetched successfully'})
+    @ApiResponse({ status: 400, description: 'Bad Request'})
+    @ApiQuery({ name: 'page', type: Number, required: false })
+    @ApiQuery({ name: 'limit', type: Number, required: false })
+    @ApiQuery({ name: 'sort_field', type: String, required: false })
+    @ApiQuery({ name: 'sort_order', type: String, required: false })
+    listOrders(
+        @Query() queryParams: PageOptionsRequestDto,
+        @Body() payload: OrderDetailsDto,
+    ): Promise<PageDto<IOrder[]>> {
+        return this.orderService.listOrders(queryParams, payload)
     }
 
     @UseGuards(JwtAuthGuard) 

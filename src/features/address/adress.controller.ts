@@ -7,7 +7,7 @@ import { ParseObjectIdPipe } from "src/pipes/parse-object-id.pipe";
 import { AddressDetailsDto } from "./dto/address-details.dto";
 import { PageDto, PageOptionsRequestDto } from "../../shared/dto";
 
-@Controller('address')
+@Controller('/api/address')
 export class AddressController {
     constructor(
         private readonly addressService: AddressService
