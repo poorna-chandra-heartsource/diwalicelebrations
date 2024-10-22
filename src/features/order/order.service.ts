@@ -306,11 +306,11 @@ export class OrderService {
             doc.pipe(res);
     
             // Add content to the PDF
-            doc.fontSize(18).text('Order Details', { align: 'center' });
+            doc.fontSize(18).text('Inquiry Details', { align: 'center' });
             doc.moveDown(1);
     
             orderDetails.forEach((order, index) => {
-                doc.fontSize(14).text(`${index + 1}. Order ID: ${order._id}`, { underline: true });
+                doc.fontSize(14).text(`${index + 1}. Inquiry ID: ${order._id}`, { underline: true });
                 doc.fontSize(12).text(`Name: ${order.userDetails.full_name}`);
                 doc.text(`Email: ${order.userDetails.email}`);
                 doc.text(`Mobile: ${order.userDetails.mobile}`);
@@ -330,13 +330,13 @@ export class OrderService {
 
                 // Create an ordered list for product details
                 order.orderItems.forEach((item: any, index: number) => {
-                    doc.fontSize(12).text(`${index + 1}. ${item.productName} - Price: ${item.price.toFixed(2)} - Quantity: ${item.quantity}`);
+                    doc.fontSize(12).text(`${index + 1}. ${item.productName} -  Quantity: ${item.quantity}  -  Price: ${item.price.toFixed(2)}`);
                 });
 
                 // Move down for total price
                 doc.moveDown(1);
                 // Total Price
-                doc.fontSize(12).text(`Total Price: ${order.total_price.toFixed(2)}`);
+                doc.fontSize(12).text(`Budgeted Price: ${order.total_price.toFixed(2)}`);
                 doc.moveDown(2); // Extra space between orders
             });
     
