@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put, Query, Req, Request, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put, Query, Req, Res, Request, UseGuards } from "@nestjs/common";
 import { OrderService } from "./order.service";
 import { CreateOrderDto } from "./dto/create-order.dto";
 import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from "@nestjs/swagger";
@@ -8,6 +8,7 @@ import { UpdatedResponseInterface } from "../../shared/interfaces";
 import { OrderDetailsDto } from "./dto/order-details.dto";
 import { IOrder } from "./interfaces/order.interface";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import { Response } from 'express'; // Import the Response object for handling responses
 
 @Controller('/api/orders')
 export class OrderController {
@@ -44,19 +45,51 @@ export class OrderController {
         return this.orderService.fetchAllOrders(user.userId, queryParams, payload)
     }
 
-    @Post('list')
+    @Get('listOrders')
     @ApiOperation({ description: 'List Orders'})
     @ApiResponse({ status: 200, description: 'Orders fetched successfully'})
     @ApiResponse({ status: 400, description: 'Bad Request'})
-    @ApiQuery({ name: 'page', type: Number, required: false })
-    @ApiQuery({ name: 'limit', type: Number, required: false })
-    @ApiQuery({ name: 'sort_field', type: String, required: false })
-    @ApiQuery({ name: 'sort_order', type: String, required: false })
     listOrders(
-        @Query() queryParams: PageOptionsRequestDto,
-        @Body() payload: OrderDetailsDto,
-    ): Promise<PageDto<IOrder[]>> {
-        return this.orderService.listOrders(queryParams, payload)
+        @Query('start_dt') start_dt: string,
+        @Query('end_dt') end_dt: string,
+    ): Promise<any> {
+        const startDate = new Date(start_dt);  // Convert to Date object
+        const endDate = new Date(end_dt);      // Convert to Date object
+
+        console.log(`Received start_dt: ${start_dt}, end_dt: ${end_dt}`);
+        console.log(`Parsed startDate: ${startDate}, endDate: ${endDate}`);
+
+
+        // Ensure dates are valid
+        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+            throw new Error('Invalid date format');
+        }
+        return this.orderService.listOrders(startDate, endDate)
+    }
+
+    @Get('listOrdersAndGeneratePDF')
+    @ApiOperation({ description: 'List Orders and generate PDF' })
+    @ApiResponse({ status: 200, description: 'Orders fetched successfully' })
+    @ApiResponse({ status: 400, description: 'Bad Request' })
+    async listOrdersAndGeneratePDF(
+        @Query('start_dt') start_dt: string,
+        @Query('end_dt') end_dt: string,
+        @Res() res: Response, // Use the @Res() decorator to access the response object
+    ): Promise<void> {
+        const startDate = new Date(start_dt);  // Convert to Date object
+        const endDate = new Date(end_dt);      // Convert to Date object
+
+        console.log(`Received start_dt: ${start_dt}, end_dt: ${end_dt}`);
+        console.log(`Parsed startDate: ${startDate}, endDate: ${endDate}`);
+
+        // Ensure dates are valid
+        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+            res.status(400).send('Invalid date format'); // Send a 400 Bad Request response
+            return;
+        }
+
+        // Call the service method to generate the PDF and send it as a response
+        await this.orderService.listOrdersAndGeneratePDF(startDate, endDate, res);
     }
 
     @UseGuards(JwtAuthGuard) 

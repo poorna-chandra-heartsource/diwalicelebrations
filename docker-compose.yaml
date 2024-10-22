@@ -1,6 +1,6 @@
 services:
   diwali-be:
-    image: diwali.azurecr.io/diwali-be-app:1.1.2
+    image: diwali.azurecr.io/diwali-be-app:1.1.3
     build:
       context: .
       dockerfile: Dockerfile
